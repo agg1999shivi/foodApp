@@ -73,4 +73,17 @@ public class Database extends SQLiteAssetHelper {
         db.execSQL(query);
     }
 
+    public int getCountCart() {
+        int count=0;
+
+        SQLiteDatabase db=getReadableDatabase();
+        String Query=String.format("SELECT COUNT(*) FROM OrderDetail");
+        Cursor cursor=db.rawQuery(Query,null);
+        if(cursor.moveToFirst()){
+            do {
+                count=cursor.getInt(0);
+            }while (cursor.moveToNext());
+        }
+        return count;
+    }
 }
