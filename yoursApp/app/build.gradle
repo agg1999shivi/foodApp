@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 27
     defaultConfig {
         applicationId "com.example.dell.yoursapp"
         minSdkVersion 16
-        targetSdkVersion 28
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -17,10 +17,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions{
+        incremental = false
+
+    }
+
 }
 
 dependencies {
-
 
 
     implementation 'com.google.firebase:firebase-messaging:17.3.0'
@@ -47,7 +51,7 @@ dependencies {
     compile 'com.github.mancj:MaterialSearchBar:0.7.1'
 
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
-   // compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:2.0.1'
+    // compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:2.0.1'
     compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:+'
     compile 'com.cepheuen.elegant-number-button:lib:1.0.2'
     compile 'com.android.support:design:26.+'
@@ -68,6 +72,19 @@ dependencies {
 
 
     implementation 'com.android.support:multidex:1.0.3'
+
+
+    implementation 'com.google.android.gms:play-services-places:15.0.1'
+    //noinspection UseOfBundledGooglePlayServices
+    implementation 'com.google.android.gms:play-services:12.0.1'
+
+    implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
+
+
+
+    implementation 'com.nineoldandroids:library:2.4.0'
+    implementation 'com.daimajia.slider:library:1.1.5@aar'
+
 }
 
 apply plugin: 'com.google.gms.google-services'

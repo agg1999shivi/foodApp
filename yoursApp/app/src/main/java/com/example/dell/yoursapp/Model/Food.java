@@ -1,9 +1,5 @@
 package com.example.dell.yoursapp.Model;
 
-/**
- * Created by 123456 on 2017/11/17.
- */
-
 public class Food {
     private String Name, Image, Description, Price, Discount, MenuId, FoodId, AvailabilityFlag;
 

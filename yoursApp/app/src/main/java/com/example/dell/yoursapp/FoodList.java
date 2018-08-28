@@ -103,7 +103,7 @@ public class FoodList extends AppCompatActivity {
             public void run() {
                 if(getIntent()!=null)
                     categoryId=getIntent().getStringExtra("CategoryId");
-                if(!categoryId.isEmpty() && categoryId!=null) {
+                if(!categoryId.isEmpty() && categoryId != null) {
                     if (Common.isConnectedToInternet(getBaseContext()))
                         loadListFood(categoryId);
                     else {
@@ -111,6 +111,53 @@ public class FoodList extends AppCompatActivity {
                         return;
                     }
                 }
+                materialSearchBar=findViewById(R.id.searchBar);
+                materialSearchBar.setHint("Enter your Food");
+                loadSuggest();
+                materialSearchBar.setCardViewElevation(10);
+                materialSearchBar.addTextChangeListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                        List<String> suggest=new ArrayList<String>();
+                        for(String search:suggestList){
+                            if(search.toLowerCase().contains(materialSearchBar.getText().toLowerCase()))
+                                suggest.add(search);
+                        }
+
+                        materialSearchBar.setLastSuggestions(suggest);
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+
+                    }
+                });
+                materialSearchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
+                    @Override
+                    public void onSearchStateChanged(boolean enabled) {
+                        if(!enabled){
+                            recyclerView.setAdapter(adapter);
+                        }
+                    }
+
+                    @Override
+                    public void onSearchConfirmed(CharSequence text) {
+
+                        startSearch(text);
+                    }
+
+                    @Override
+                    public void onButtonClicked(int buttonCode) {
+
+                    }
+                });
+
+
             }
         });
 
@@ -126,52 +173,6 @@ public class FoodList extends AppCompatActivity {
             }
         }
 
-        materialSearchBar=findViewById(R.id.searchBar);
-        materialSearchBar.setHint("Enter your Food");
-        loadSuggest();
-        materialSearchBar.setLastSuggestions(suggestList);
-        materialSearchBar.setCardViewElevation(10);
-        materialSearchBar.addTextChangeListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                List<String> suggest=new ArrayList<String>();
-                for(String search:suggestList){
-                    if(search.toLowerCase().contains(materialSearchBar.getText().toLowerCase()))
-                        suggest.add(search);
-                }
-
-                materialSearchBar.setLastSuggestions(suggest);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-        materialSearchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
-            @Override
-            public void onSearchStateChanged(boolean enabled) {
-                if(!enabled){
-                    recyclerView.setAdapter(adapter);
-                }
-            }
-
-            @Override
-            public void onSearchConfirmed(CharSequence text) {
-
-                startSearch(text);
-            }
-
-            @Override
-            public void onButtonClicked(int buttonCode) {
-
-            }
-        });
 
     }
 
@@ -185,7 +186,7 @@ public class FoodList extends AppCompatActivity {
 
     private void startSearch(CharSequence text) {
 
-        Query searchByName=foodList.orderByChild("Name").equalTo(text.toString());
+        Query searchByName=foodList.orderByChild("name").equalTo(text.toString());
         FirebaseRecyclerOptions<Food> foodOptions=new FirebaseRecyclerOptions.Builder<Food>()
                 .setQuery(searchByName,Food.class)
                 .build();
@@ -223,7 +224,7 @@ public class FoodList extends AppCompatActivity {
     }
 
     private void loadSuggest() {
-        foodList.orderByChild("MenuId").equalTo(categoryId)
+        foodList.orderByChild("menuId").equalTo(categoryId)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -232,6 +233,7 @@ public class FoodList extends AppCompatActivity {
                             Food item=postSnapshot.getValue(Food.class);
                             suggestList.add(item.getName());
                         }
+                        materialSearchBar.setLastSuggestions(suggestList);
                     }
 
                     @Override
@@ -242,7 +244,7 @@ public class FoodList extends AppCompatActivity {
     }
 
     private void loadListFood(String categoryID){
-        Query searchByName=foodList.orderByChild("MenuId").equalTo(categoryId);
+        Query searchByName=foodList.orderByChild("menuId").equalTo(categoryId);
         FirebaseRecyclerOptions<Food> foodOptions=new FirebaseRecyclerOptions.Builder<Food>()
                 .setQuery(searchByName,Food.class)
                 .build();
@@ -262,7 +264,8 @@ public class FoodList extends AppCompatActivity {
                                 model.getName(),
                                 "1",
                                 model.getPrice(),
-                                model.getDiscount()
+                                model.getDiscount(),
+                                model.getImage()
                         ));
 
                         Toast.makeText(FoodList.this,"Added to Cart",Toast.LENGTH_SHORT).show();

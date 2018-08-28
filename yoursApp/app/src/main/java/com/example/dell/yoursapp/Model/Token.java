@@ -1,8 +1,8 @@
 package com.example.dell.yoursapp.Model;
 
 public class Token {
-    private String token;
-    private boolean isServerToken;
+    public String token;
+    public boolean isServerToken;
 
     public Token() {
     }

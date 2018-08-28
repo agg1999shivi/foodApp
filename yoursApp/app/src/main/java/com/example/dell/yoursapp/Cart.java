@@ -1,15 +1,21 @@
 package com.example.dell.yoursapp;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
@@ -36,6 +42,16 @@ import com.example.dell.yoursapp.Model.Sender;
 import com.example.dell.yoursapp.Model.Token;
 import com.example.dell.yoursapp.Remote.APIService;
 import com.example.dell.yoursapp.ViewHolder.CartAdapter;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -70,11 +86,12 @@ public class Cart extends AppCompatActivity {
     FirebaseDatabase database;
     DatabaseReference requests;
 
-    TextView txtTotalPrice;
+   public TextView txtTotalPrice;
     Button btnPlace;
     float totalPrice;
 
-    //
+    Place shippingAddress;
+
     List<Order> cart = new ArrayList<>();
     CartAdapter adapter;
 
@@ -88,6 +105,17 @@ public class Cart extends AppCompatActivity {
     private boolean partial = false;
 
     APIService mService;
+
+    //Location
+    private LocationRequest mLocationRequest;
+    private GoogleApiClient mGoogleApiClient;
+    private Location mLastLocation;
+
+    private static final int UPDATE_INTERVAL=5000;
+    private static final int FASTEST_INTERVAL=3000;
+    private static final int DISPLACEMENT=10;
+    private static final int LOCATION_REQUEST_CODE=9999;
+    private static final int PLAY_SERVICES_REQUEST=9997;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,6 +155,9 @@ public class Cart extends AppCompatActivity {
     }
 
 
+
+
+
     private void showAlertDialog() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(Cart.this);
         alertDialog.setTitle("One more step!");
@@ -135,7 +166,30 @@ public class Cart extends AppCompatActivity {
         LayoutInflater inflater=this.getLayoutInflater();
         View order_address_comment=inflater.inflate(R.layout.order_address_comment,null);
 
-        final MaterialEditText edtAddress=order_address_comment.findViewById(R.id.edtAddress);
+      //  final MaterialEditText edtAddress=order_address_comment.findViewById(R.id.edtAddress);
+
+     PlaceAutocompleteFragment edtAddress=(PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+     //
+        edtAddress.getView().findViewById(R.id.place_autocomplete_search_button).setVisibility(View.GONE);
+
+        ((EditText)edtAddress.getView().findViewById(R.id.place_autocomplete_search_input))
+                .setHint("Enter your address");
+
+        ((EditText)edtAddress.getView().findViewById(R.id.place_autocomplete_search_input))
+                .setTextSize(14);
+
+        edtAddress.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                shippingAddress=place;
+            }
+
+            @Override
+            public void onError(Status status) {
+
+                Log.e("ERROR",status.getStatusMessage());
+            }
+        });
         final MaterialEditText edtComment=order_address_comment.findViewById(R.id.edtComment);
 
         alertDialog.setView(order_address_comment);
@@ -147,10 +201,11 @@ public class Cart extends AppCompatActivity {
                 Request request = new Request(
                         Common.currentUser.getPhone(),
                         Common.currentUser.getName(),
-                        edtAddress.getText().toString(),
+                        shippingAddress.getAddress().toString(),
                         txtTotalPrice.getText().toString(),
                         "0",
                         edtComment.getText().toString(),
+                        String.format("%s %s",shippingAddress.getLatLng().latitude,shippingAddress.getLatLng().longitude),
                         cart
                 );
 
@@ -180,6 +235,10 @@ public class Cart extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
+
+                getFragmentManager().beginTransaction()
+                        .remove(getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment))
+                        .commit();
             }
         });
 
@@ -188,10 +247,12 @@ public class Cart extends AppCompatActivity {
 
     }
 
+
+
     private void sendNotificationOrder(final String order_number) {
 
         DatabaseReference tokens= FirebaseDatabase.getInstance().getReference("Tokens");
-        Query data=tokens.orderByChild("isServerToken").equalTo(true);
+        Query data=tokens.orderByChild("isServerToken").equalTo(true);   //servertoken
         data.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -199,14 +260,13 @@ public class Cart extends AppCompatActivity {
                     Token serverToken=postSnapshot.getValue(Token.class);
 
                     com.example.dell.yoursapp.Model.Notification notification=new com.example.dell.yoursapp.Model.Notification
-                            ("Shivani","You have new order "+ order_number );
+                            ("Shivani","You have new order "+ order_number);
                     Sender content=new Sender(serverToken.getToken(),notification);
                     mService.sendNotification(content)
                             .enqueue(new Callback<MyResponse>() {
                                 @Override
-                                public void onResponse(Call<MyResponse> call, Response<MyResponse> response) {
-
-                                   if (response.code() == 200) {
+                                public void onResponse(@NonNull Call<MyResponse> call, @NonNull Response<MyResponse> response) {
+                                    if (response.code() == 200) {
                                         if (response.body().success == 1) {
                                             Toast.makeText(Cart.this, "Thank you , Order Place", Toast.LENGTH_SHORT).show();
                                             finish();
@@ -214,8 +274,7 @@ public class Cart extends AppCompatActivity {
                                             Toast.makeText(Cart.this, "Failed !!!!!", Toast.LENGTH_SHORT).show();
                                         }
                                     }
-                               }
-
+                                }
                                 @Override
                                 public void onFailure(Call<MyResponse> call, Throwable t) {
 
@@ -245,7 +304,7 @@ public class Cart extends AppCompatActivity {
         //Calculate total price
         total = 0;
         for(Order order:cart)
-            total+=(float) (Integer.parseInt(order.getPrice()))*(Integer.parseInt(order.getQuanlity()));
+            total+=(float) (Integer.parseInt(order.getPrice()))*(Integer.parseInt(order.getQuantity()));
         Locale locale = new Locale("en","US");
         NumberFormat fmt = NumberFormat.getCurrencyInstance(locale);
 
@@ -280,4 +339,7 @@ public class Cart extends AppCompatActivity {
 
         loadListFood();
     }
+
+
+
 }
