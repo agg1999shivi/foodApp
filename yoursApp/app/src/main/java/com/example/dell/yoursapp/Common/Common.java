@@ -10,6 +10,7 @@ import com.example.dell.yoursapp.Remote.APIService;
 import com.example.dell.yoursapp.Remote.RetrofitClient;
 
 public class Common {
+    public static String topicName="News";
     public static User currentUser;
     public static final String DELETE = "Delete";
     public static final String USER_KEY="User";

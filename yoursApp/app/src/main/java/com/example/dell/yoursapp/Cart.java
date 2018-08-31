@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,12 +16,15 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SnapHelper;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -28,11 +32,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.dell.yoursapp.Common.Common;
 import com.example.dell.yoursapp.Database.Database;
+import com.example.dell.yoursapp.Helper.RecyclerItemTouchHelper;
+import com.example.dell.yoursapp.Interface.RecyclerItemTouchHelperListener;
 import com.example.dell.yoursapp.Model.Food;
 import com.example.dell.yoursapp.Model.MyResponse;
 import com.example.dell.yoursapp.Model.Order;
@@ -42,6 +49,7 @@ import com.example.dell.yoursapp.Model.Sender;
 import com.example.dell.yoursapp.Model.Token;
 import com.example.dell.yoursapp.Remote.APIService;
 import com.example.dell.yoursapp.ViewHolder.CartAdapter;
+import com.example.dell.yoursapp.ViewHolder.CartViewHolder;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -60,6 +68,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.rengwuxian.materialedittext.MaterialEditText;
+import com.rey.material.widget.SnackBar;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -78,7 +87,7 @@ import static  com.example.dell.yoursapp.Cart.inventoryList;
 
 //this thread updates the inventoryList from firebase
 
-public class Cart extends AppCompatActivity {
+public class Cart extends AppCompatActivity implements RecyclerItemTouchHelperListener {
 
     RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
@@ -101,6 +110,8 @@ public class Cart extends AppCompatActivity {
     static List<String> requestId  = new ArrayList<>();
     static List<Request> requestList = new ArrayList<>();
     static float total;
+
+    RelativeLayout rootLayout;
 
     private boolean partial = false;
 
@@ -134,6 +145,12 @@ public class Cart extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
+
+        rootLayout=findViewById(R.id.rootLayout);
+        //swipe  delete item
+        ItemTouchHelper.SimpleCallback itemTouchHelperCallback=new RecyclerItemTouchHelper(0,ItemTouchHelper.LEFT,this);
+        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
+
 
         txtTotalPrice = findViewById(R.id.total);
         btnPlace = findViewById(R.id.btnPlaceOrder);
@@ -217,7 +234,7 @@ public class Cart extends AppCompatActivity {
 //                        .setValue(request);
 
 
-                new Database(getBaseContext()).cleanCart();
+                new Database(getBaseContext()).cleanCart(Common.currentUser.getPhone());
 
 
                 sendNotificationOrder(order_number);
@@ -295,7 +312,7 @@ public class Cart extends AppCompatActivity {
 
 
     private void loadListFood() {
-        cart = new Database(this).getCarts();
+        cart = new Database(this).getCarts(Common.currentUser.getPhone());
        // orderList.add(cart);
         adapter = new CartAdapter(cart,this);
         adapter.notifyDataSetChanged();
@@ -332,7 +349,7 @@ public class Cart extends AppCompatActivity {
 
     private void deleteCart(int order) {
         cart.remove(order);
-        new Database(this).cleanCart();
+        new Database(this).cleanCart(Common.currentUser.getPhone());
 
         for(Order item:cart)
             new Database(this).addToCart(item);
@@ -341,5 +358,59 @@ public class Cart extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
+        if(viewHolder instanceof CartViewHolder){
+            String name=((CartAdapter)recyclerView.getAdapter()).getItem(viewHolder.getAdapterPosition()).getProductName();
 
+            final Order deleteItem =((CartAdapter)recyclerView.getAdapter()).getItem(viewHolder.getAdapterPosition());
+            final int deleteIndex=viewHolder.getAdapterPosition();
+
+            adapter.removeItem(deleteIndex);
+            new Database(getBaseContext()).removeFromCart(deleteItem.getProductId(),Common.currentUser.getPhone());
+
+            int total = 0;
+            List<Order> orders=new Database(getBaseContext()).getCarts(Common.currentUser.getPhone());
+          //  List<Order> orders=new Database(getBaseContext()).getCarts(Common.currentUser.getPhone());
+            for(Order item:orders)
+                total+=(float) (Integer.parseInt(item.getPrice()))*(Integer.parseInt(item.getQuantity()));
+            Locale locale = new Locale("en","US");
+            NumberFormat fmt = NumberFormat.getCurrencyInstance(locale);
+
+
+            // add tax, profit to total, do we need to show the tax and profit on the app??
+            float tax= (float) (total*0.06);
+            float profit = (float) (total*0.3);
+            total+=tax+profit;
+
+            txtTotalPrice.setText(fmt.format(total));
+
+            Snackbar snackBar=Snackbar.make(rootLayout,name + " removed from cart !!!!!!",Snackbar.LENGTH_LONG);
+
+            snackBar.setAction("UNDO", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                  adapter.restoreItem(deleteItem,deleteIndex);
+                  new Database(getBaseContext()).addToCart(deleteItem);
+                    int total = 0;
+                    List<Order> orders=new Database(getBaseContext()).getCarts(Common.currentUser.getPhone());
+                    //  List<Order> orders=new Database(getBaseContext()).getCarts(Common.currentUser.getPhone());
+                    for(Order item:orders)
+                        total+=(float) (Integer.parseInt(item.getPrice()))*(Integer.parseInt(item.getQuantity()));
+                    Locale locale = new Locale("en","US");
+                    NumberFormat fmt = NumberFormat.getCurrencyInstance(locale);
+
+
+                    // add tax, profit to total, do we need to show the tax and profit on the app??
+                    float tax= (float) (total*0.06);
+                    float profit = (float) (total*0.3);
+                    total+=tax+profit;
+
+                    txtTotalPrice.setText(fmt.format(total));
+                }
+            });
+            snackBar.setActionTextColor(Color.YELLOW);
+            snackBar.show();
+        }
+    }
 }

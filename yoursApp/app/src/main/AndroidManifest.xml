@@ -2,10 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.dell.yoursapp">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -13,11 +13,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAYKuZbyDEiiEXi43TCxQbk6NiIuiDQzU8"
-            />
+            android:value="AIzaSyAYKuZbyDEiiEXi43TCxQbk6NiIuiDQzU8" />
 
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -49,7 +47,9 @@
             </intent-filter>
         </service>
 
-        <activity android:name=".Showcomment"></activity>
+        <activity android:name=".Showcomment" />
+        <activity android:name=".SearchActivity" />
+        <activity android:name=".FavoritesActivity"></activity>
     </application>
 
 </manifest>

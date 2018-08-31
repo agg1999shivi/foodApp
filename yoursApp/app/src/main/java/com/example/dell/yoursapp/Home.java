@@ -16,6 +16,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,8 +51,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.squareup.picasso.Picasso;
+import com.stepstone.apprating.C;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -169,7 +173,7 @@ public class Home extends AppCompatActivity
             }
         });
 
-        fab.setCount(new Database(this).getCountCart());
+        fab.setCount(new Database(this).getCountCart(Common.currentUser.getPhone()));
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -275,7 +279,7 @@ public class Home extends AppCompatActivity
     protected void onResume() {
         super.onResume();
 
-        fab.setCount(new Database(this).getCountCart());
+        fab.setCount(new Database(this).getCountCart(Common.currentUser.getPhone()));
         if(adapter != null)
             adapter.startListening();
     }
@@ -325,8 +329,8 @@ public class Home extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId()==R.id.refresh)
-            loadMenu();
+        if(item.getItemId()==R.id.menu_search)
+            startActivity(new Intent(Home.this,SearchActivity.class));
 
         return super.onOptionsItemSelected(item);
     }
@@ -358,11 +362,58 @@ public class Home extends AppCompatActivity
            showChangePasswordDialog();
 
         }
+        else if(id == R.id.nav_settings){
+            showHomeSettingDialog();
+        }
+        else if(id == R.id.nav_fav){
+            startActivity(new Intent(Home.this,FavoritesActivity.class));
+        }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
+    private void showHomeSettingDialog() {
+        final AlertDialog.Builder alertDialog =new AlertDialog.Builder(Home.this);
+        alertDialog.setTitle("SETTINGS");
+
+        LayoutInflater inflater=LayoutInflater.from(this);
+        View layout_setting=inflater.inflate(R.layout.setting_layout,null);
+
+        final CheckBox ckb_subscribe_news=layout_setting.findViewById(R.id.ckb_sub_new);
+        Paper.init(this);
+
+        String isSubscribe=Paper.book().read("sub_new");
+
+                if(isSubscribe == null || TextUtils.isEmpty(isSubscribe) || isSubscribe.equals("false"))
+                    ckb_subscribe_news.setChecked(false);
+        else
+            ckb_subscribe_news.setChecked(true);
+
+        alertDialog.setView(layout_setting);
+
+        alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                        dialogInterface.dismiss();
+
+                        if (ckb_subscribe_news.isChecked()) {
+                            FirebaseMessaging.getInstance().subscribeToTopic(Common.topicName);
+
+                            Paper.book().write("sub_new", true);
+                        } else {
+                            FirebaseMessaging.getInstance().unsubscribeFromTopic(Common.topicName);
+
+                            Paper.book().write("sub_new", false);
+                        }
+
+                    }
+                });
+        alertDialog.show();
+
+
+}
     private void showChangePasswordDialog() {
         AlertDialog.Builder alertDialog =new AlertDialog.Builder(Home.this);
         alertDialog.setTitle("CHANGE PASSWORD");

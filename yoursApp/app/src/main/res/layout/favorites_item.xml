@@ -8,7 +8,37 @@
     app:cardElevation="10dp"
     android:layout_marginBottom="8dp"
     >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="8dp"
+        android:id="@+id/view_background"
+        android:background="@color/bgRowBackgroung">
+
+        <ImageView
+            android:id="@+id/delete_icon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/ic_delete_white_24dp"
+            android:layout_centerVertical="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/delete_icon"
+            android:text="DELETE"
+            android:textSize="13sp"
+            android:layout_marginRight="10dp"
+            android:textColor="@color/white"/>
+    </RelativeLayout>
+
     <LinearLayout
+        android:id="@+id/view_foreground"
+        android:layout_margin="8dp"
+        android:background="@color/white"
         android:orientation="vertical"
         android:weightSum="5"
         android:layout_width="match_parent"
@@ -29,24 +59,16 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/food_name"
-            android:text="Name of Food"
-            android:background="@android:color/white"
-            android:textColor="#4f0e0d0e"
-            android:textSize="20sp"
-            android:layout_alignParentBottom="true"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="9"/>
-
-            <ImageView
-                android:id="@+id/fav_image"
+            <TextView
+                android:id="@+id/food_name"
+                android:text="Name of Food"
+                android:background="@android:color/white"
+                android:textColor="#4f0e0d0e"
+                android:textSize="20sp"
+                android:layout_alignParentBottom="true"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:tint="@color/colorAccent"
-                android:src="@drawable/ic_favorite_black_24dp"/>
+                android:layout_weight="9"/>
 
         </LinearLayout>
 
@@ -74,4 +96,5 @@
 
         </RelativeLayout>
     </LinearLayout>
+
 </android.support.v7.widget.CardView>
