@@ -92,8 +92,10 @@ dependencies {
 
 
     implementation 'com.facebook.android:account-kit-sdk:4.29.0'
-    implementation ('com.facebook.android:facebook-share:4.29.0')
+    implementation('com.facebook.android:facebook-share:4.29.0')
 
+
+    implementation 'com.karumi:dexter:5.0.0'
 
 }
 

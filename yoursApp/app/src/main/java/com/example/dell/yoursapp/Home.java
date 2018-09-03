@@ -357,10 +357,12 @@ public class Home extends AppCompatActivity
             signIn.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(signIn);
         }
-
         else if(id == R.id.nav_change_pwd){
            showChangePasswordDialog();
 
+        }
+        else if(id == R.id.nav_nearby_store){
+           startActivity(new Intent(Home.this,NearbyStore.class));
         }
         else if(id == R.id.nav_home_address){
             showHomeAddressDialog();

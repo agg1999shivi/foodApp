@@ -10,4 +10,5 @@
 
     <string name="FACEBOOK_APP_ID">2089661398014707</string>
     <string name="ACCOUNT_KIT_CLIENT_TOKEN">81e80fdda9c92e239ed73aa2bb4ba7ef</string>
+    <string name="title_activity_nearby_store">Map</string>
 </resources>
