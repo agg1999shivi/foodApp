@@ -7,7 +7,15 @@ import android.net.NetworkInfo;
 
 import com.example.dell.yoursapp.Model.User;
 import com.example.dell.yoursapp.Remote.APIService;
+import com.example.dell.yoursapp.Remote.GoogleRetrofitClient;
+import com.example.dell.yoursapp.Remote.IGoogleService;
 import com.example.dell.yoursapp.Remote.RetrofitClient;
+
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Locale;
 
 public class Common {
     public static String topicName="News";
@@ -22,9 +30,15 @@ public class Common {
 
     private static final String BASE_URL="https://fcm.googleapis.com/";
 
+    private static final String GOOGLE_API_URL="https://maps.googleapis.com/";
+
     public static APIService getFCMService(){
         return RetrofitClient.getClient(BASE_URL).create(APIService.class);
 
+    }
+
+    public static IGoogleService getGoogleMapAPI(){
+        return GoogleRetrofitClient.getGoogleClient(GOOGLE_API_URL).create(IGoogleService.class);
     }
 
 
@@ -52,6 +66,13 @@ public class Common {
             return "Received";
         else
             return "Food Ready";
+    }
+
+    public  static BigDecimal formatCurrency(String amount, Locale locale) throws ParseException{
+        NumberFormat format=NumberFormat.getCurrencyInstance(locale);
+        if(format instanceof DecimalFormat)
+            ((DecimalFormat)format).setParseBigDecimal(true);
+        return  (BigDecimal)format.parse(amount.replace("[^\\d.,]",""));
     }
 }
 

@@ -10,6 +10,8 @@ public class User {
     private String Phone;
     private String IsStaff;
     private String secureCode;
+    private String homeAddress;
+    private Object balance;
 
     public User() {
     }
@@ -19,6 +21,14 @@ public class User {
         Password = password;
         IsStaff="false";
         this.secureCode=secureCode;
+    }
+
+    public Object getBalance() {
+        return balance;
+    }
+
+    public void setBalance(Object balance) {
+        this.balance = balance;
     }
 
     public String getSecureCode() {
@@ -38,7 +48,6 @@ public class User {
         return Phone;
     }
 
-
     public String getIsStaff() {
         return IsStaff;
     }
@@ -47,7 +56,6 @@ public class User {
         IsStaff = isStaff;
 
     }
-
 
     public String getName() {
         return Name;
@@ -63,5 +71,13 @@ public class User {
 
     public void setPassword(String password) {
         Password = password;
+    }
+
+    public String getHomeAddress() {
+        return homeAddress;
+    }
+
+    public void setHomeAddress(String homeAddress) {
+        this.homeAddress = homeAddress;
     }
 }

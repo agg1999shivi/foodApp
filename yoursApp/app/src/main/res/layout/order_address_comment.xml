@@ -52,7 +52,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/rdiShipToAddress"
-                    android:text="Ship To This Address"/>
+                    android:text="Current Location"/>
 
                 <RadioButton
                     android:layout_width="match_parent"
@@ -83,6 +83,12 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/rdiPayPal"
                     android:text="PayPal"/>
+
+                <RadioButton
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/rdiBalance"
+                    android:text="Balance"/>
 
             </RadioGroup>
 

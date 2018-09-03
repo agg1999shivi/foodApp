@@ -14,21 +14,41 @@ public class Request {
     private String status;
     private List<Order> foods;
     private String comment;
+    private String paymentMethod;
+    private String paymentState;
     private boolean partial = false;
     private String latLng;
 
     public Request() {
     }
 
-    public Request(String phone, String name, String address, String total, String status, String comment, String latLng,List<Order> foods) {
+    public Request(String phone, String name, String address, String total, String status, String comment,String paymentMethod,String paymentState, String latLng,List<Order> foods) {
         this.phone = phone;
         this.name = name;
         this.address = address;
         this.total = total;
         this.status = status;
         this.comment = comment;
+        this.paymentMethod=paymentMethod;
+        this.paymentState=paymentState;
         this.latLng = latLng;
         this.foods = foods;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getPaymentState() {
+        return paymentState;
+    }
+
+    public void setPaymentState(String paymentState) {
+        this.paymentState = paymentState;
     }
 
     public String getPhone() {

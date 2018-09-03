@@ -2,6 +2,7 @@ package com.example.dell.yoursapp.ViewHolder;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.dell.yoursapp.Interface.ItemClickListener;
@@ -17,13 +18,16 @@ public class OrderViewHolder extends RecyclerView.ViewHolder implements View.OnC
 
     private ItemClickListener itemClickListener;
 
+    public ImageView btn_delete;
+
     public OrderViewHolder(View itemView){
         super(itemView);
 
         txtOrderAddress = itemView.findViewById(R.id.order_address);
         txtOrderId = itemView.findViewById(R.id.order_id);
         txtOrderStatus = itemView.findViewById(R.id.order_status);
-        txtOrderphone = itemView.findViewById(R.id.order_address);
+        txtOrderphone = itemView.findViewById(R.id.order_phone);
+        btn_delete=itemView.findViewById(R.id.btn_delete);
 
         itemView.setOnClickListener(this);
     }
