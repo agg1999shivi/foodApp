@@ -8,7 +8,10 @@
 
     <string name="forgot_pwd">Forgot Password?</string>
 
-    <string name="FACEBOOK_APP_ID">2089661398014707</string>
-    <string name="ACCOUNT_KIT_CLIENT_TOKEN">81e80fdda9c92e239ed73aa2bb4ba7ef</string>
+
+    <string name="FACEBOOK_APP_ID">258082951710531</string>
+    <string name="ACCOUNT_KIT_CLIENT_TOKEN">95b44d2a5b9eebef40a85a0f95192973</string>
+
     <string name="title_activity_nearby_store">Map</string>
+    <string name="title_activity_tracking_order">Map</string>
 </resources>

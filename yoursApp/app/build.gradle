@@ -82,6 +82,8 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:15.0.1'
 
 
+    compile 'com.google.android.gms:play-services-auth:16.0.0'
+
     implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
 
 
@@ -91,9 +93,7 @@ dependencies {
 
 
 
-    implementation 'com.facebook.android:account-kit-sdk:4.29.0'
-    implementation('com.facebook.android:facebook-share:4.29.0')
-
+    implementation 'com.facebook.android:account-kit-sdk:4.+'
 
     implementation 'com.karumi:dexter:5.0.0'
 

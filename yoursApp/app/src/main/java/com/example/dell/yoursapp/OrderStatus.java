@@ -1,5 +1,6 @@
 package com.example.dell.yoursapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -11,7 +12,9 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.example.dell.yoursapp.Common.Common;
+import com.example.dell.yoursapp.Interface.ItemClickListener;
 import com.example.dell.yoursapp.Model.Food;
+import com.example.dell.yoursapp.Model.Order;
 import com.example.dell.yoursapp.Model.Request;
 import com.example.dell.yoursapp.ViewHolder.FoodViewHolder;
 import com.example.dell.yoursapp.ViewHolder.OrderViewHolder;
@@ -78,6 +81,13 @@ public class OrderStatus extends AppCompatActivity {
                 viewHolder.txtOrderStatus.setText(convertCodeToStatus(model.getStatus()));
                 viewHolder.txtOrderAddress.setText(model.getAddress());
                 viewHolder.txtOrderphone.setText(model.getPhone());
+                viewHolder.setItemClickListener(new ItemClickListener() {
+                    @Override
+                    public void onClick(View view, int position, boolean isLongClick) {
+                        Common.currentKey=adapter.getRef(position).getKey();
+                        startActivity(new Intent(OrderStatus.this,TrackingOrder.class));
+                    }
+                });
                 viewHolder.btn_delete.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {

@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -13,7 +12,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -40,6 +38,7 @@ import com.example.dell.yoursapp.Model.Banner;
 import com.example.dell.yoursapp.Model.Category;
 import com.example.dell.yoursapp.Model.Token;
 import com.example.dell.yoursapp.ViewHolder.MenuViewHolder;
+import com.facebook.accountkit.AccountKit;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -54,7 +53,6 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.squareup.picasso.Picasso;
-import com.stepstone.apprating.C;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -352,12 +350,12 @@ public class Home extends AppCompatActivity
             startActivity(orderIntent);
 
         }else if(id == R.id.nav_log_out){
-            Paper.book().destroy();
-            Intent signIn = new Intent(Home.this, SignIn.class);
+            AccountKit.logOut();
+            Intent signIn = new Intent(Home.this, ScreenOneActivity.class);
             signIn.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(signIn);
         }
-        else if(id == R.id.nav_change_pwd){
+        else if(id == R.id.nav_update_name){
            showChangePasswordDialog();
 
         }
@@ -452,70 +450,40 @@ public class Home extends AppCompatActivity
 
 }
     private void showChangePasswordDialog() {
-        AlertDialog.Builder alertDialog =new AlertDialog.Builder(Home.this);
-        alertDialog.setTitle("CHANGE PASSWORD");
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(Home.this);
+        alertDialog.setTitle("UPDATE NAME");
         alertDialog.setMessage("Please fill all information");
 
-        LayoutInflater inflater=LayoutInflater.from(this);
-        View layout_pwd=inflater.inflate(R.layout.change_password_layout,null);
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View layout_pwd = inflater.inflate(R.layout.update_name_layout, null);
 
-        final MaterialEditText edtPassword=layout_pwd.findViewById(R.id.edtPassword);
-        final MaterialEditText edtNewPassword=layout_pwd.findViewById(R.id.edtNewPassword);
-        final MaterialEditText edtChangePassword=layout_pwd.findViewById(R.id.edtRepeatPassword);
+        final MaterialEditText edtName = layout_pwd.findViewById(R.id.edtName);
 
         alertDialog.setView(layout_pwd);
 
         //button
-        alertDialog.setPositiveButton("CHANGE", new DialogInterface.OnClickListener() {
+        alertDialog.setPositiveButton("UPDATE", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
-                //Change Password Here
-
-                //For use SpotsDialog , please use AlertDialog
-
-                final android.app.AlertDialog waitingDialog=new SpotsDialog(Home.this);
+                final android.app.AlertDialog waitingDialog = new SpotsDialog(Home.this);
                 waitingDialog.show();
 
-                //Check old Password
-
-                if(edtPassword.getText().toString().equals(Common.currentUser.getPassword())) {
-                    //change new password nd repeat password
-                    if (edtNewPassword.getText().toString().equals(edtChangePassword.getText().toString())) {
-                        Map<String, Object> passwordUpdate = new HashMap<>();
-                        passwordUpdate.put("Password", edtNewPassword.getText().toString());
-
-                        //Make Update
-                        DatabaseReference user = FirebaseDatabase.getInstance().getReference("User");
-                        user.child(Common.currentUser.getPhone())
-                                .updateChildren(passwordUpdate)
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        waitingDialog.dismiss();
-                                        Toast.makeText(Home.this, "Password was update", Toast.LENGTH_SHORT).show();
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(Home.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-
-                    }
-                    else{
-                        waitingDialog.dismiss();
-                        Toast.makeText(Home.this, "New password doesn't match", Toast.LENGTH_SHORT).show();
-                    }
-                }
-                else
-                {
-                    waitingDialog.dismiss();
-                    Toast.makeText(Home.this, "Wrong Old Password", Toast.LENGTH_SHORT).show();
-                }
-
+                Map<String, Object> update_name = new HashMap<>();
+                update_name.put("name", edtName.getText().toString());
+                FirebaseDatabase.getInstance()
+                        .getReference("User")
+                        .child(Common.currentUser.getPhone())
+                        .updateChildren(update_name)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                waitingDialog.dismiss();
+                                if (task.isSuccessful())
+                                    Toast.makeText(Home.this, "Name was updated", Toast.LENGTH_SHORT).show();
+                            }
+                        });
             }
+
 
         });
 

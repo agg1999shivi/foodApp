@@ -3,11 +3,15 @@ package com.example.dell.yoursapp;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -31,6 +35,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import dmax.dialog.SpotsDialog;
 import io.paperdb.Paper;
 //
@@ -38,15 +45,19 @@ import io.paperdb.Paper;
 
 public class ScreenOneActivity extends AppCompatActivity {
     private static final int REQUEST_CODE = 7171;
-    Button btnsignin,btnsignup;
+    Button btnContinue;
     FirebaseDatabase database;
     DatabaseReference users;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signup_login);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        printKeyHash();
 
         database=FirebaseDatabase.getInstance();
         users=database.getReference("User");
@@ -79,27 +90,14 @@ public class ScreenOneActivity extends AppCompatActivity {
             }
         });
 
-        Paper.init(this);
+       btnContinue=findViewById(R.id.btn_continue);
 
-        btnsignin = findViewById(R.id.main_signin);
-        btnsignup = findViewById(R.id.main_signup);
-
-        btnsignup.setOnClickListener(new View.OnClickListener() {
+        btnContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent signin = new Intent(ScreenOneActivity.this, SignUp.class);
-                startActivity(signin);
 
-               // startLoginSystem();
+               startLoginSystem();
 
-            }
-        });
-
-        btnsignin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent signin = new Intent(ScreenOneActivity.this, SignIn.class);
-                startActivity(signin);
             }
         });
 
@@ -109,7 +107,7 @@ public class ScreenOneActivity extends AppCompatActivity {
             waitingDialog.setMessage("Please wait");
             waitingDialog.setCancelable(false);
 
-
+            //AUTOLOGIN
             AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
                 @Override
                 public void onSuccess(Account account) {
@@ -141,13 +139,21 @@ public class ScreenOneActivity extends AppCompatActivity {
             });
         }
 
-        String user=Paper.book().read(Common.USER_KEY);
-       String pwd=Paper.book().read(Common.USER_PASSWORD);
-       if(user!=null && pwd!=null){
-            if(!user.isEmpty()&& !pwd.isEmpty()){
-                login(user,pwd);
-            }
+    }
 
+    private void printKeyHash() {
+        try {
+            PackageInfo info=getPackageManager().getPackageInfo("com.example.dell.yoursapp",
+                    PackageManager.GET_SIGNATURES);
+            for(Signature signature:info.signatures){
+                MessageDigest md=MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                Log.d("KEYHASH", Base64.encodeToString(md.digest(),Base64.DEFAULT));
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
         }
     }
 
@@ -159,51 +165,7 @@ public class ScreenOneActivity extends AppCompatActivity {
         startActivityForResult(intent,REQUEST_CODE);
     }
 
-    private void login(final String phone, final String pwd) {
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference table_user = database.getReference("User");
 
-        if (Common.isConnectedToInternet(getBaseContext())) {
-            final ProgressDialog mDialog = new ProgressDialog(ScreenOneActivity.this);
-            mDialog.setMessage("Please Wating...");
-            mDialog.show();
-
-            table_user.addValueEventListener(new ValueEventListener() {
-
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                    //check if user not exist in database
-                    if (dataSnapshot.child(phone).exists()) {
-                        //get user information
-                        mDialog.dismiss();
-                        User user = dataSnapshot.child(phone).getValue(User.class);
-                        user.setPhone(phone);
-                        if (user.getPassword().equals(pwd)) {
-                            Intent homeIntent = new Intent(ScreenOneActivity.this, Home.class);
-                            Common.currentUser = user;
-                            startActivity(homeIntent);
-                            finish();
-
-                        } else {
-                            Toast.makeText(ScreenOneActivity.this, "Wrong Password !", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(ScreenOneActivity.this, "User not exist in Database !", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-        }
-        else{
-            Toast.makeText(ScreenOneActivity.this,"Please check your connection!!!!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
